@@ -8,21 +8,19 @@ class PlaylistProvider extends ChangeNotifier {
       songName: 'Song 1',
       artistName: 'Artist 1',
       albumPath: 'assets/OIG1.jpeg',
-      audioPath: "assets/lofi.mp3",
+      audioPath: "lofi.mp3",
     ),
     Song(
       songName: 'Song 2',
       artistName: 'Artist 2',
       albumPath: 'assets/OIG2.jpeg',
-      audioPath:
-          "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+      audioPath: "lofi.mp3",
     ),
     Song(
       songName: 'Song 3',
       artistName: 'Artist 3',
       albumPath: 'assets/OIG3.jpeg',
-      audioPath:
-          "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+      audioPath: "lofi.mp3",
     )
   ];
 
@@ -38,7 +36,56 @@ class PlaylistProvider extends ChangeNotifier {
 
     await _audioPlayer.stop();
     await _audioPlayer.play(AssetSource(path));
+    _isPlaying = true;
+    notifyListeners();
+  }
 
+  void pause() async {
+    await _audioPlayer.pause();
+    _isPlaying = false;
+    notifyListeners();
+  }
+
+  void resume() async {
+    await _audioPlayer.resume();
+    _isPlaying = true;
+    notifyListeners();
+  }
+
+  void pauseOrResume() {
+    if (_isPlaying) {
+      pause();
+    } else {
+      resume();
+    }
+    notifyListeners();
+  }
+
+  void seek(Duration duration) {
+    _audioPlayer.seek(duration);
+    notifyListeners();
+  }
+
+  void playNextSong() {
+    if (_currentSongIndex == _playlist.length - 1) {
+      _currentSongIndex = 0;
+    } else {
+      _currentSongIndex = _currentSongIndex! + 1;
+    }
+    play();
+    notifyListeners();
+  }
+
+  void playPreviousSong() {
+    if (_currentDuration.inSeconds > 2) {
+      seek(Duration.zero);
+    } else {
+      if (currentSongIndex! > 0) {
+        _currentSongIndex = _currentSongIndex! - 1;
+      } else {
+        _currentSongIndex = _playlist.length - 1;
+      }
+    }
   }
 
   PlaylistProvider() {
@@ -55,7 +102,9 @@ class PlaylistProvider extends ChangeNotifier {
       notifyListeners();
     });
 
-    _audioPlayer.onPlayerComplete.listen((event) {});
+    _audioPlayer.onPlayerComplete.listen((event) {
+      playNextSong();
+    });
   }
 
   int? _currentSongIndex;
@@ -64,8 +113,19 @@ class PlaylistProvider extends ChangeNotifier {
 
   int? get currentSongIndex => _currentSongIndex;
 
+  Duration get currentDuration => _currentDuration;
+
+  Duration get totalDuration => _totalDuration;
+
+  bool get isPlaying => _isPlaying;
+
   set currentSongIndex(int? index) {
     _currentSongIndex = index;
+
+    if (index != null) {
+      play();
+    }
+
     notifyListeners();
   }
 }
