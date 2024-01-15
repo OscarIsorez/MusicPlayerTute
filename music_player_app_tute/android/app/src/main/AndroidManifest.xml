@@ -2,7 +2,7 @@
     <application
         android:label="music_player_app_tute"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/soundwaves">
         <activity
             android:name=".MainActivity"
             android:exported="true"
